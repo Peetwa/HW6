@@ -133,7 +133,7 @@ int main(int argc, char **argv)
    int full_size_with_boarders = (sz_x+wrap_x)*(sz_y+wrap_y);
    int slice_size = ((sz_y+wrap_y)/size)*(sz_x + wrap_x);
    int slice_width = ((sz_y+ wrap_y)/size);
-   
+   printf("\n slice_size = %d \n", slice_size); 
    if (rank > 0){
    	//allocate space for slice
    	char * slice_mem = (char *) malloc(2*full_size_with_boarders/size*sizeof(char));
@@ -190,14 +190,18 @@ int main(int argc, char **argv)
 		printf("rank = %d", r);
                 printf("lower  = %d",r*slice_width);
 		printf("upper = %d",r+1*slice_width);
-		MPI_Send(&whole_world[0][r*slice_width,(r+1)*slice_width],slice_size,MPI_INT,r,0,MPI_COMM_WORLD);
-		MPI_Send(&whole_world[1][r*slice_width,(r+1)*slice_width],slice_size,MPI_INT,r,0,MPI_COMM_WORLD);
+                int s = (r+1)*slice_width - r*slice_width;
+		printf("\n sending %d indeces",s);
+		printf("\n send count = %d", slice_size);
+		MPI_Send(&whole_world[0][r*slice_width,(r+1)*slice_width],slice_width,MPI_INT,r,0,MPI_COMM_WORLD);
+		MPI_Send(&whole_world[1][r*slice_width,(r+1)*slice_width],slice_width,MPI_INT,r,0,MPI_COMM_WORLD);
 	}
 
    }
-   else{
-   MPI_Recv(&my_world[0], slice_size, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
-   MPI_Recv(&my_world[1], slice_size, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
+   if (rank > 0){
+   MPI_Recv(&my_world[0], slice_width, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
+   printf("\n receiving %d \n", slice_width);
+   MPI_Recv(&my_world[1], slice_width, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
    return 0;
    printf("this is good");
    }
